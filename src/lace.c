@@ -283,6 +283,7 @@ lace_init_worker(int worker, size_t dq_size)
     w->pu = -1;
 #endif
     w->enabled = 1;
+    w->current_task = malloc(sizeof(Task));
     if (workers_init[worker].stack != 0) {
         w->stack_trigger = ((size_t)workers_init[worker].stack) + workers_init[worker].stacksize/20;
     } else {
@@ -938,7 +939,10 @@ lace_exec_in_new_frame(WorkerP *__lace_worker, Task *__lace_dq_head, Task *root)
     lace_barrier();
 
     // execute task
+    Task* old_task = __lace_worker->current_task;
+    __lace_worker->current_task = root;
     root->f(__lace_worker, __lace_dq_head, root);
+    __lace_worker->current_task = old_task;
     compiler_barrier();
 
     // wait until all workers are back (else they may steal from previous frame)
@@ -956,13 +960,19 @@ lace_exec_in_new_frame(WorkerP *__lace_worker, Task *__lace_dq_head, Task *root)
 
 VOID_TASK_IMPL_2(lace_steal_loop_root, Task*, t, int*, done)
 {
+    Task* old_task = __lace_worker->current_task;
+    __lace_worker->current_task = t;
     t->f(__lace_worker, __lace_dq_head, t);
+    __lace_worker->current_task = old_task;
     *done = 1;
 }
 
 VOID_TASK_2(lace_together_helper, Task*, t, volatile int*, finished)
 {
+    Task* old_task = __lace_worker->current_task;
+    __lace_worker->current_task = t;
     t->f(__lace_worker, __lace_dq_head, t);
+    __lace_worker->current_task = old_task;
 
     for (;;) {
         int f = *finished;

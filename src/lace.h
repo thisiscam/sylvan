@@ -225,6 +225,8 @@ typedef struct _WorkerP {
 #endif
 
     int16_t pu;                 // my pu (for HWLOC)
+
+    Task* current_task;
 } WorkerP;
 
 #define LACE_TYPEDEF_CB(t, f, ...) typedef t (*f)(WorkerP *, Task *, ##__VA_ARGS__);
@@ -503,7 +505,10 @@ lace_steal(WorkerP *self, Task *__dq_head, Worker *victim)
                 Task *t = &victim->dq[ts.ts.tail];
                 t->thief = self->_public;
                 lace_time_event(self, 1);
+                Task *old_task = self->current_task;
+                self->current_task = t;
                 t->f(self, __dq_head, t);
+                self->current_task = old_task;
                 lace_time_event(self, 2);
                 t->thief = THIEF_COMPLETED;
                 lace_time_event(self, 8);
