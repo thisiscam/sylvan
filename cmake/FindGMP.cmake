@@ -8,9 +8,14 @@ if (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
     set(GMP_FIND_QUIETLY TRUE)
 endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
-find_path(GMP_INCLUDE_DIR NAMES gmp.h )
-find_library(GMP_LIBRARIES NAMES gmp libgmp )
-find_library(GMPXX_LIBRARIES NAMES gmpxx libgmpxx )
+if(${CYGWIN})
+	set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
+endif()
+
+find_path(GMP_INCLUDE_DIR NAMES gmp.h HINTS $ENV{GMP_ROOT} )
+find_library(GMP_LIBRARIES NAMES gmp libgmp gmp.lib HINTS $ENV{GMP_ROOT} )
+find_library(GMPXX_LIBRARIES NAMES gmpxx libgmpxx gmpxx.lib HINTS $ENV{GMP_ROOT} )
+MESSAGE(STATUS "xx" ${GMP_INCLUDE_DIR})
 MESSAGE(STATUS "GMP libs: " ${GMP_LIBRARIES} " " ${GMPXX_LIBRARIES} )
 
 include(FindPackageHandleStandardArgs)

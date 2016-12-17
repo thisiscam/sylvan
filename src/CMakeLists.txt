@@ -36,9 +36,11 @@ add_library(sylvan
     tls.h
 )
 
-target_link_libraries(sylvan m pthread gmp)
+find_package(GMP REQUIRED)
 
-target_include_directories(sylvan PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(sylvan m pthread ${GMP_LIBRARIES})
+
+target_include_directories(sylvan PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${GMP_INCLUDE_DIR})
 
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
     set_target_properties(sylvan PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
@@ -47,8 +49,6 @@ endif()
 if(UNIX AND NOT APPLE)
     target_link_libraries(sylvan rt)
 endif()
-
-find_package(GMP REQUIRED)
 
 option(USE_HWLOC "Use HWLOC library if available" ON)
 

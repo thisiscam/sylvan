@@ -32,8 +32,8 @@ if(HAVE_PROFILER)
     target_link_libraries(nqueens profiler)
 endif()
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    # add argp library for OSX
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR ${CYGWIN})
+    # add argp library for OSX and cygwin
     target_link_libraries(mc argp)
     target_link_libraries(lddmc argp)
     target_link_libraries(ldd2bdd argp)
